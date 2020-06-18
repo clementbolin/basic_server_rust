@@ -1,12 +1,12 @@
-use std::net::{TcpListener, TcpStream};
 use std::io::{Read, Write};
+use std::net::{TcpListener, TcpStream};
 use std::thread;
 
 fn handle_client(mut stream: TcpStream, ip: &str) {
     let mut msg: Vec<u8> = Vec::new();
 
     loop {
-        let mut buf = &mut [0; 10];
+        let buf = &mut [0; 10];
 
         match stream.read(buf) {
             Ok(res) => {
@@ -21,10 +21,16 @@ fn handle_client(mut stream: TcpStream, ip: &str) {
                     }
                     x += 1;
                     if *c == '\n' as u8 {
-                        println!("message received {}: {}", ip, String::from_utf8(msg).unwrap());
+                        println!(
+                            "message received {}: {}",
+                            ip,
+                            String::from_utf8(msg).unwrap()
+                        );
                         match stream.write(b"ok\n") {
                             Ok(_) => {}
-                            Err(err) => { println!("{}", err); }
+                            Err(err) => {
+                                println!("{}", err);
+                            }
                         };
                         msg = Vec::new();
                     } else {
@@ -49,14 +55,14 @@ fn main() {
             Ok(stream) => {
                 let ip = match stream.peer_addr() {
                     Ok(addr) => format!("(ip: {})", addr),
-                    Err(_) => "inconnu".to_owned()
+                    Err(_) => "inconnu".to_owned(),
                 };
                 println!("New client: {}", ip);
-                thread::spawn(move|| {
-                    handle_client(stream, &*ip)
-                });
+                thread::spawn(move || handle_client(stream, &*ip));
             }
-            Err(_) => { println!("Connection Failed"); }
+            Err(_) => {
+                println!("Connection Failed");
+            }
         };
     }
 }

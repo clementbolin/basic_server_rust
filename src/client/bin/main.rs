@@ -1,21 +1,27 @@
 use std::net::TcpStream;
-use std::io::{Write, Read, stdin, stdout};
+use std::io::{Write, Read, stdin};
 
 fn get_entry() -> String {
     let mut buf = String::new();
 
-    stdin().read_line(&mut buf);
+    match stdin().read_line(&mut buf) {
+        Ok(_) => {}
+        Err(e) => { println!("{}", e); }
+    }
     buf.replace("\n", "").replace("\r", "")
 }
 
 fn exchange_server(mut stream: TcpStream) {
     let stdoutt = std::io::stdout();
     let mut io = stdoutt.lock();
-    let mut buf = &mut [0; 3];
+    let buf = &mut [0; 3];
 
     println!("Tap Quit for leave");
     loop {
-        write!(io, "> ");
+        match write!(io, "> ") {
+            Ok(_) => {}
+            Err(e) => { println!("{}", e); }
+        };
         match io.flush() {
             Ok(_) => {}
             Err(e) => { println!("{}", e); }
@@ -26,7 +32,10 @@ fn exchange_server(mut stream: TcpStream) {
                 return;
             }
             input => {
-                write!(stream, "{}\n", input);
+                match write!(stream, "{}\n", input) {
+                    Ok(_) => {}
+                    Err(e) => { println!("{}", e); }
+                };
                 match stream.read(buf) {
                     Ok(res) => {
                         if res < 1 {
